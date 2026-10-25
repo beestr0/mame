@@ -8,6 +8,7 @@
 
 ***************************************************************************/
 
+#include "util/bit_compat.h"
 #include "emu.h"
 
 #include <bit>
@@ -129,7 +130,7 @@ void device_state_entry::format_from_mask()
 	// make up a format based on the mask
 	if (m_datamask == 0)
 		throw emu_fatalerror("%s state entry requires a nonzero mask\n", m_symbol);
-	int width = (std::log2p1(m_datamask) - 1) / 4 + 1;
+	int width = (util::bit_width(m_datamask) - 1) / 4 + 1;
 	m_format = string_format("%%0%dX", width);
 }
 

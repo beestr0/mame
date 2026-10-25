@@ -369,7 +369,9 @@ void osd_common_t::register_options()
 
 	REGISTER_MODULE(m_mod_man, OUTPUT_NONE);
 	REGISTER_MODULE(m_mod_man, OUTPUT_CONSOLE);
-
+#if !defined(MAME_NO_HTTP)
+	REGISTER_MODULE(m_mod_man, OUTPUT_NETWORK);
+#endif
 #ifndef __LIBRETRO__
 	REGISTER_MODULE(m_mod_man, OUTPUT_WIN32);
 #endif

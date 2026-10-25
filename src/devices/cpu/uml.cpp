@@ -31,6 +31,7 @@
 
 ***************************************************************************/
 
+#include "util/bit_compat.h"
 #include "emu.h"
 #include "drcuml.h"
 
@@ -622,7 +623,7 @@ public:
 			// extract right-aligned field, convert to BFXU
 			inst.m_opcode = OP_BFXU;
 			inst.m_param[2] = bits - inst.param(2).immediate();
-			inst.m_param[3] = std::log2p1(inst.param(3).immediate());
+			inst.m_param[3] = util::bit_width(inst.param(3).immediate());
 		}
 	}
 

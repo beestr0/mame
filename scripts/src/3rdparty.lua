@@ -57,7 +57,7 @@ if _OPTIONS["targetos"]=="windows" then
 		"__USE_MINGW_ANSI_STDIO=0",
 	}
 end
-if _OPTIONS["targetos"]=="macosx" then
+if _OPTIONS["targetos"]=="macosx" or (_OPTIONS["targetos"]=="freebsd" and _OPTIONS["LIBRETRO_OPENORBIS"] ~= "1") then
 	defines {
 		"HAVE_ARC4RANDOM",
 	}

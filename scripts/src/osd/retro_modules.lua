@@ -94,6 +94,10 @@ function osdmodulesbuild()
 		MAME_DIR .. "src/osd/modules/sound/sound_module.h",
 	}
 
+	if not _OPTIONS["DONT_USE_NETWORK"] then
+		files { MAME_DIR .. "src/osd/modules/output/network.cpp" }
+	end
+
 	includedirs {
 		MAME_DIR .. "3rdparty/asio/include",
 	}

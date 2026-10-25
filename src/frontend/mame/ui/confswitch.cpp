@@ -8,6 +8,7 @@
 
 *********************************************************************/
 
+#include "util/bit_compat.h"
 #include "emu.h"
 #include "ui/confswitch.h"
 
@@ -66,7 +67,7 @@ inline bool menu_confswitch::switch_group_descriptor::matches(ioport_field const
 
 inline unsigned menu_confswitch::switch_group_descriptor::switch_count() const noexcept
 {
-	return std::log2p1(mask);
+	return util::bit_width(mask);
 }
 
 

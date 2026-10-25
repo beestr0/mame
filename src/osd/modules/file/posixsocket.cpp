@@ -11,6 +11,30 @@
 
 #include "posixfile.h"
 
+#if defined(MAME_OPENORBIS) && defined(MAME_NO_HTTP)
+// This offline console target has no network-file transport. Report the
+// unsupported feature instead of pulling DNS/SceNet into ordinary ROM I/O.
+bool posix_check_socket_path(std::string const &path) noexcept
+{
+    return path.compare(0, 7, "socket.") == 0;
+}
+
+bool posix_check_domain_path(std::string const &path) noexcept
+{
+    return path.compare(0, 7, "domain.") == 0;
+}
+
+std::error_condition posix_open_socket(std::string const &, std::uint32_t, osd_file::ptr &, std::uint64_t &) noexcept
+{
+    return std::errc::not_supported;
+}
+
+std::error_condition posix_open_domain(std::string const &, std::uint32_t, osd_file::ptr &, std::uint64_t &) noexcept
+{
+    return std::errc::not_supported;
+}
+#else
+
 #include <cassert>
 #include <cerrno>
 #include <cstdio>
@@ -272,3 +296,5 @@ std::error_condition posix_open_domain(std::string const &path, std::uint32_t op
 
 	return create_socket(sau, sock, openflags, file, filesize);
 }
+
+#endif // offline OpenOrbis network-file transport

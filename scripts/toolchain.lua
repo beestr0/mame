@@ -578,6 +578,9 @@ function toolchain(_buildDir, _subDir)
 	configuration { "rpi" }
 		targetdir (_buildDir .. "rpi" .. "/bin")
 		objdir (_buildDir .. "rpi" .. "/obj")
+newoption { trigger = "LIBRETRO_OPENORBIS", description = "Build for the public OpenOrbis PS4 SDK" }
+newoption { trigger = "LIBRETRO_STATIC", description = "Build a static Libretro entry point for native hosts" }
+
 -- BEGIN libretro overrides to MAME's GENie build
 
 	configuration { "libretro*" }

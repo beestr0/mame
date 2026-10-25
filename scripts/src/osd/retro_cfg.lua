@@ -81,10 +81,12 @@ configuration { "osx*" }
 		MAME_DIR .. "3rdparty/bx/include/compat/osx",
 	}
 
-configuration { "freebsd" }
-	includedirs {
-		MAME_DIR .. "3rdparty/bx/include/compat/freebsd",
-	}
+if _OPTIONS["LIBRETRO_OPENORBIS"] ~= "1" then
+	configuration { "freebsd" }
+		includedirs {
+			MAME_DIR .. "3rdparty/bx/include/compat/freebsd",
+		}
+end
 
 configuration { "netbsd" }
 	includedirs {

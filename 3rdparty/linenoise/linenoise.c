@@ -632,12 +632,14 @@ static int queryCursor(struct current *current, int* cols)
  */
 static int getWindowSize(struct current *current)
 {
+#ifdef TIOCGWINSZ
     struct winsize ws;
 
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col != 0) {
         current->cols = ws.ws_col;
         return 0;
     }
+#endif /* TIOCGWINSZ: otherwise use the existing terminal/default fallback */
 
     /* Failed to query the window size. Perhaps we are on a serial terminal.
      * Try to query the width by sending the cursor as far to the right

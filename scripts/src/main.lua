@@ -22,7 +22,11 @@ else
 end
 	project (projname)
 	uuid (os.uuid(_target .. "_" .. _subtarget))
-	kind "ConsoleApp"
+	if _OPTIONS["LIBRETRO_STATIC"] == "1" then
+		kind "StaticLib"
+	else
+		kind "ConsoleApp"
+	end
 
 	configuration { "android*" }
 if _OPTIONS["osd"] == "retro" then
@@ -165,7 +169,11 @@ else
 end
 	-- BEGIN libretro overrides to MAME's GENie build
 	configuration { "libretro*" }
-		kind "SharedLib"	
+		if _OPTIONS["LIBRETRO_STATIC"] == "1" then
+			kind "StaticLib"
+		else
+			kind "SharedLib"
+		end
 		targetsuffix "_libretro"
 		if _OPTIONS["targetos"]=="android" then
 			targetsuffix "_libretro_android"
@@ -192,6 +200,10 @@ end
 			targetextension ".dylib"
 		else
 			targetsuffix "_libretro"
+		end
+
+		if _OPTIONS["LIBRETRO_STATIC"] == "1" then
+			targetextension ".a"
 		end
 
 		targetprefix ""

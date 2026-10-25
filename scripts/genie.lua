@@ -743,6 +743,14 @@ else
 	}
 end
 
+-- Keep offline module registration and the HTTP class layout consistent.
+if _OPTIONS["DONT_USE_NETWORK"] then
+	defines { "MAME_NO_HTTP=1" }
+end
+if _OPTIONS["LIBRETRO_OPENORBIS"] == "1" then
+	defines { "MAME_OPENORBIS=1" }
+end
+
 if _OPTIONS["NOASM"] == "1" then
 	defines {
 		"MAME_NOASM"

@@ -161,6 +161,7 @@ public:
 	}
 
 private:
+#if !defined(MAME_NO_HTTP)
 	void on_open(http_manager::websocket_endpoint_ptr endpoint, std::shared_ptr<webpp::Connection> connection);
 
 	void on_message(http_manager::websocket_endpoint_ptr endpoint, std::shared_ptr<webpp::Connection> connection, const std::string& payload, int opcode);
@@ -171,12 +172,15 @@ private:
 
 	bool read_file(std::ostream &os, const std::string &path);
 
+#endif
 	bool m_active;
 
+#if !defined(MAME_NO_HTTP)
 	std::shared_ptr<asio::io_context>   m_io_context;
 	std::unique_ptr<webpp::http_server> m_server;
 	std::unique_ptr<webpp::ws_server>   m_wsserver;
 	std::thread                         m_server_thread;
+#endif
 	std::string                         m_root;
 
 	std::unordered_map<std::string, http_handler> m_handlers;

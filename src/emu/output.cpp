@@ -10,6 +10,7 @@
 
 #include "emu.h"
 #include "output.h"
+#include "util/unordered_lookup.h"
 
 #include <algorithm>
 
@@ -216,12 +217,12 @@ bool output_manager::validate_name(device_t &device, std::string_view name)
 output_manager::item_impl const *output_manager::find_item(device_t &device, std::string_view name)
 {
 	// first look for an output of the device itself
-	auto const exact = m_itemtable.find(std::make_pair(std::ref(device), name));
+	auto const exact = util::unordered_find(m_itemtable, std::make_pair(std::ref(device), name));
 	if (m_itemtable.end() != exact)
 		return &*exact;
 
 	// try treating the string as a relative tag
-	auto const qualified = m_qualified.find(std::string_view(device.subtag(name)).substr(1));
+	auto const qualified = util::unordered_find(m_qualified, std::string_view(device.subtag(name)).substr(1));
 	if (m_qualified.end() != qualified)
 		return &qualified->get();
 
@@ -229,7 +230,7 @@ output_manager::item_impl const *output_manager::find_item(device_t &device, std
 	// TODO: phase out support for this
 	if (!device.owner())
 	{
-		auto const unqualified = m_unqualified.find(name);
+		auto const unqualified = util::unordered_find(m_unqualified, name);
 		if (m_unqualified.end() != unqualified)
 			return &unqualified->get();
 	}
@@ -247,7 +248,7 @@ output_manager::item_impl const &output_manager::find_or_create_item(device_t &d
 	assert(!m_save_data);
 
 	// only use a perfect match, don't use find_item
-	auto const found = m_itemtable.find(std::make_pair(std::ref(device), name));
+	auto const found = util::unordered_find(m_itemtable, std::make_pair(std::ref(device), name));
 	if (m_itemtable.end() != found)
 		return *found;
 
@@ -303,7 +304,7 @@ void output_manager::postload()
 void output_manager::add_notifier(device_t &device, std::string_view name, notifier_func callback, void *param)
 {
 	// only use a perfect match, don't use find_item
-	auto const found = m_itemtable.find(std::make_pair(std::ref(device), name));
+	auto const found = util::unordered_find(m_itemtable, std::make_pair(std::ref(device), name));
 	if (m_itemtable.end() == found)
 		throw emu_fatalerror("Attempt to add notifier to non-existent output %s:%s", device.tag() + 1, name);
 

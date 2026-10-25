@@ -105,7 +105,6 @@ private:
 void libretro_vfs_init(void)
 {
 	struct retro_vfs_interface_info vfs_iface_info;
-	int version;
 
 	retro_vfs_interface_ptr = NULL;
 	retro_vfs_interface_version = 0;
@@ -114,10 +113,11 @@ void libretro_vfs_init(void)
 	vfs_iface_info.iface = NULL;
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VFS_INTERFACE, &vfs_iface_info) &&
-		vfs_iface_info.iface)
+		vfs_iface_info.iface &&
+		vfs_iface_info.required_interface_version >= RETRO_VFS_HIGHEST_REQUESTED_VERSION)
 	{
 		retro_vfs_interface_ptr     = vfs_iface_info.iface;
-		retro_vfs_interface_version = (uint32_t)version;
+		retro_vfs_interface_version = vfs_iface_info.required_interface_version;
 	}
 }
 
@@ -136,7 +136,7 @@ bool libretro_vfs_file_exists(const char *path)
    int64_t size  = 0;
    int     flags;
 
-   if (!retro_vfs_interface_ptr || !retro_vfs_interface_ptr->stat)
+   if (!retro_vfs_interface_ptr || !retro_vfs_interface_ptr->stat_64)
       return false;
 
    flags = retro_vfs_interface_ptr->stat_64(path, &size);
@@ -178,6 +178,7 @@ bool libretro_vfs_read_whole_file(const char *path, std::string &out)
       out.clear();
       return false;
    }
+   return true;
 }
 
 std::error_condition libretro_vfs_open(std::string const &path, std::uint32_t openflags, osd_file::ptr &file, std::uint64_t &filesize) noexcept
@@ -268,7 +269,7 @@ osd::directory::entry::ptr libretro_vfs_stat(std::string const &path)
 	result->type = (flags & RETRO_VFS_STAT_IS_DIRECTORY)
 			? osd::directory::entry::entry_type::DIR
 			: osd::directory::entry::entry_type::FILE;
-	result->size = std::uint64_t(std::uint32_t(size));
+	result->size = size >= 0 ? std::uint64_t(size) : 0;
 	result->last_modified = std::chrono::system_clock::time_point{};
 
 	return osd::directory::entry::ptr(result);

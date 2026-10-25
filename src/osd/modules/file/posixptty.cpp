@@ -106,9 +106,9 @@ bool posix_check_ptty_path(std::string const &path) noexcept
 
 std::error_condition posix_open_ptty(std::uint32_t openflags, osd_file::ptr &file, std::uint64_t &filesize, std::string &name) noexcept
 {
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(MAME_OPENORBIS)
 	return std::errc::not_supported; // TODO: revisit this error code
-#else // defined(__ANDROID__)
+#else // Android/OpenOrbis do not provide pseudo-terminals
 	struct termios tios;
 	std::memset(&tios, 0, sizeof(tios));
 	tios.c_iflag = 0;
@@ -212,5 +212,5 @@ std::error_condition posix_open_ptty(std::uint32_t openflags, osd_file::ptr &fil
 		::close(masterfd);
 		return std::errc::not_enough_memory;
 	}
-#endif // defined(__ANDROID__)
+#endif // Android/OpenOrbis
 }

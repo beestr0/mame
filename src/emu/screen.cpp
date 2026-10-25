@@ -232,7 +232,7 @@ void screen_device::svg_renderer::output_change(const osd::output_item &output)
 {
 	// for now, use the unqualified name for backwards compatibility
 	// TODO: migrate to using qualified output names
-	const auto l = m_key_ids.find(output.name());
+	const auto l = m_key_ids.find(std::string(output.name()));
 	if (l == m_key_ids.end())
 		return;
 	m_key_state[l->second] = output.value();

@@ -205,6 +205,11 @@ end
 		"ZSTD_DISABLE_ASM",
 	}
 
+	if _OPTIONS["LIBRETRO_OPENORBIS"] == "1" then
+		-- FSELF has no binding for optional ELF weak tracing hooks.
+		defines { "ZSTD_NO_TRACE", "ZSTD_TRACE=0" }
+	end
+
 	files {
 		MAME_DIR .. "3rdparty/zstd/lib/common/debug.c",
 		MAME_DIR .. "3rdparty/zstd/lib/common/entropy_common.c",

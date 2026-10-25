@@ -62,3 +62,8 @@ and guarding linenoise's terminal-size ioctl. Offline OpenOrbis socket/domain
 file transports return not_supported rather than importing DNS support into
 ordinary ROM loading. Other targets retain the real POSIX implementation.
 VFS version negotiation, success returns, and 64-bit sizes were corrected.
+
+FSELF conversion additionally requires zstd's supported ZSTD_NO_TRACE and
+ZSTD_TRACE=0 configuration: OpenOrbis cannot bind its optional ELF weak tracing
+hooks. Rebuild all zstd objects together when changing this setting because it
+changes internal context layouts. The normal compression implementation remains.

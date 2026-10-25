@@ -42,7 +42,7 @@ public:
 		assert(!(decode_limit & base));
 		for (offs_t remain = length, start = 0U; remain && (decode_limit >= start); )
 		{
-			unsigned const msb(std::bit_width(remain) - 1);
+			unsigned const msb(std::log2p1(remain) - 1);
 			offs_t const chunk(offs_t(1) << msb);
 			offs_t range((chunk - 1) & decode_limit);
 			offs_t mirror(decode_limit & ~decode_mask & ~range);
@@ -74,7 +74,7 @@ public:
 			T &&install)
 	{
 		offs_t decode_mask(length - 1);
-		for (unsigned i = std::bit_width(decode_mask) - 1; 0U < i; --i)
+		for (unsigned i = std::log2p1(decode_mask) - 1; 0U < i; --i)
 		{
 			if (!BIT(decode_mask, i - 1))
 			{

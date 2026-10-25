@@ -89,7 +89,7 @@ function osdmodulesbuild()
 		MAME_DIR .. "src/osd/modules/output/output_module.h",
 		MAME_DIR .. "src/osd/modules/output/none.cpp",
 		MAME_DIR .. "src/osd/modules/output/console.cpp",
-		MAME_DIR .. "src/osd/modules/output/network.cpp",
+
 		MAME_DIR .. "src/osd/modules/sound/sound_module.cpp",
 		MAME_DIR .. "src/osd/modules/sound/sound_module.h",
 	}

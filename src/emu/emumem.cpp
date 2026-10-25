@@ -355,7 +355,7 @@ memory_region *memory_manager::region_alloc(std::string name, u32 length, u8 wid
 
 memory_region *memory_manager::region_find(std::string_view name)
 {
-	auto const i = m_regionlist.find(name);
+	auto const i = m_regionlist.find(std::string(name));
 	return (i != m_regionlist.end()) ? i->second.get() : nullptr;
 }
 
@@ -405,7 +405,7 @@ memory_share *memory_manager::share_alloc(device_t &dev, std::string name, u8 wi
 
 memory_share *memory_manager::share_find(std::string_view name)
 {
-	auto const i = m_sharelist.find(name);
+	auto const i = m_sharelist.find(std::string(name));
 	return (i != m_sharelist.end()) ? i->second.get() : nullptr;
 }
 
@@ -434,7 +434,7 @@ memory_bank *memory_manager::bank_alloc(device_t &device, std::string name)
 
 memory_bank *memory_manager::bank_find(std::string_view name)
 {
-	auto const i = m_banklist.find(name);
+	auto const i = m_banklist.find(std::string(name));
 	return (i != m_banklist.end()) ? i->second.get() : nullptr;
 }
 

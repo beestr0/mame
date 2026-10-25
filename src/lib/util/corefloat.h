@@ -26,25 +26,25 @@
 // convert 32 bits to IEEE single-precision floating point
 constexpr float u2f(std::uint32_t v) noexcept
 {
-	return std::bit_cast<float>(v);
+	return __builtin_bit_cast(float, v);
 }
 
 // convert IEEE single-precision floating point to 32 bits
 constexpr std::uint32_t f2u(float f) noexcept
 {
-	return std::bit_cast<std::uint32_t>(f);
+	return __builtin_bit_cast(std::uint32_t, f);
 }
 
 // convert 64 bits to IEEE double-precision floating point
 constexpr double u2d(std::uint64_t v) noexcept
 {
-	return std::bit_cast<double>(v);
+	return __builtin_bit_cast(double, v);
 }
 
 // convert IEEE double-precision floating point to 64 bits
 constexpr std::uint64_t d2u(double d) noexcept
 {
-	return std::bit_cast<std::uint64_t>(d);
+	return __builtin_bit_cast(std::uint64_t, d);
 }
 
 

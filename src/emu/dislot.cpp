@@ -93,7 +93,7 @@ device_slot_interface::slot_option &device_slot_interface::do_replace_option(std
 	if (name.empty())
 		throw emu_fatalerror("slot '%s' attempt to replace option without name\n", device().tag());
 
-	auto const found = m_options.find(name);
+	auto const found = m_options.find(std::string(name));
 	if (found == m_options.end())
 		throw emu_fatalerror("slot '%s' attempt to replace nonexistent option '%s'\n", device().tag(), name);
 
@@ -107,7 +107,7 @@ void device_slot_interface::option_remove(std::string_view name)
 	if (name.empty())
 		throw emu_fatalerror("slot '%s' attempt to remove option without name\n", device().tag());
 
-	auto const it = m_options.find(name);
+	auto const it = m_options.find(std::string(name));
 	if (m_options.end() == it)
 		throw emu_fatalerror("slot '%s' attempt to remove nonexistent option '%s'\n", device().tag(), name);
 
@@ -117,7 +117,7 @@ void device_slot_interface::option_remove(std::string_view name)
 
 device_slot_interface::slot_option &device_slot_interface::config_option(std::string_view name)
 {
-	auto const found = m_options.find(name);
+	auto const found = m_options.find(std::string(name));
 	if (found != m_options.end())
 		return *found->second;
 
@@ -141,7 +141,7 @@ bool device_slot_interface::has_selectable_options() const
 
 device_slot_interface::slot_option const *device_slot_interface::option(std::string_view name) const
 {
-	auto const found = m_options.find(name);
+	auto const found = m_options.find(std::string(name));
 	if (found != m_options.end())
 		return found->second.get();
 

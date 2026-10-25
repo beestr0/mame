@@ -66,7 +66,7 @@ inline bool menu_confswitch::switch_group_descriptor::matches(ioport_field const
 
 inline unsigned menu_confswitch::switch_group_descriptor::switch_count() const noexcept
 {
-	return std::bit_width(mask);
+	return std::log2p1(mask);
 }
 
 

@@ -640,7 +640,7 @@ std::pair<handler_entry *, handler_entry *> memory_view::make_handlers(address_s
 		m_space = &space;
 
 		offs_t span = addrstart ^ addrend;
-		u32 awidth = std::bit_width(span);
+		u32 awidth = std::log2p1(span);
 
 		h_make(awidth, m_config->data_width(), m_config->addr_shift(), space, *this, addrstart, addrend, m_handler_read, m_handler_write);
 		m_handler_read->ref();

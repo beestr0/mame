@@ -498,7 +498,7 @@ public:
 	bool has_slot_option(std::string_view device_name) const { return bool(find_slot_option(device_name)); }
 	const ::image_option &image_option(std::string_view device_name) const;
 	::image_option &image_option(std::string_view device_name);
-	bool has_image_option(std::string_view device_name) const { return m_image_options.find(device_name) != m_image_options.end(); }
+	bool has_image_option(std::string_view device_name) const { return m_image_options.find(std::string(device_name)) != m_image_options.end(); }
 
 protected:
 	virtual void command_argument_processed() override;

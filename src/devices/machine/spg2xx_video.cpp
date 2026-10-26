@@ -7,6 +7,7 @@
 **********************************************************************/
 
 #include "emu.h"
+#include "util/ps4_profile.h"
 #include "spg2xx_video.h"
 
 DEFINE_DEVICE_TYPE(SPG24X_VIDEO, spg24x_video_device, "spg24x_video", "SPG240-series System-on-a-Chip (Video)")
@@ -71,6 +72,7 @@ void spg2xx_video_device::device_reset()
 
 uint32_t spg2xx_video_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)
 {
+	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_VIDEO);
 	address_space &mem = m_cpu->space(AS_PROGRAM);
 
 	if (0)

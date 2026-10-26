@@ -9,6 +9,7 @@
 ***************************************************************************/
 
 #include "emu.h"
+#include "util/ps4_profile.h"
 #include "debugger.h"
 
 //**************************************************************************
@@ -392,6 +393,7 @@ inline void device_scheduler::apply_suspend_changes()
 
 void device_scheduler::timeslice()
 {
+	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_SCHEDULER);
 	bool call_debugger = ((machine().debug_flags & DEBUG_FLAG_ENABLED) != 0);
 
 	// build the execution list if we don't have one yet

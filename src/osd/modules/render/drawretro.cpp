@@ -6,6 +6,7 @@
 //============================================================
 
 #include "render_module.h"
+#include "util/ps4_profile.h"
 
 #include "modules/osdmodule.h"
 
@@ -64,6 +65,7 @@ int renderer_retro::xy_to_render_target(int x, int y, int *xt, int *yt)
 
 int renderer_retro::draw(const int update)
 {
+	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_BLIT);
 	// get the target bounds
 	osd_dim nd = window().get_size();
 

@@ -17,6 +17,7 @@
 *****************************************************************************/
 
 #include "emu.h"
+#include "util/ps4_profile.h"
 #include "unsp.h"
 
 #include "unspdasm.h"
@@ -536,6 +537,7 @@ inline void unsp_device::execute_one(const uint16_t op)
 
 void unsp_device::execute_run()
 {
+	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_CPU);
 	if (m_enable_drc)
 	{
 		execute_run_drc();

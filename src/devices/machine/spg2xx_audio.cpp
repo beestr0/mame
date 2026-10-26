@@ -18,6 +18,7 @@
 **********************************************************************/
 
 #include "emu.h"
+#include "util/ps4_profile.h"
 #include "spg2xx_audio.h"
 
 DEFINE_DEVICE_TYPE(SPG2XX_AUDIO, spg2xx_audio_device, "spg2xx_audio", "SPG2xx-series System-on-a-Chip Audio")
@@ -873,6 +874,7 @@ void spg2xx_audio_device::audio_w(offs_t offset, uint16_t data)
 
 void spg2xx_audio_device::sound_stream_update(sound_stream &stream)
 {
+	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_SOUND);
 	for (int i = 0; i < stream.samples(); i++)
 	{
 		int32_t left_total = 0;

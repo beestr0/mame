@@ -6,6 +6,12 @@
 #include <stdarg.h>
 
 #include "osdepend.h"
+#include "util/ps4_profile.h"
+#if defined(MAME_OPENORBIS)
+extern "C" int retro_ps4_profile_begin(uint64_t (*clock)()) { return ps4_profile::begin(clock); }
+extern "C" int retro_ps4_profile_end(ps4_core_profile *out, uint32_t size) { return ps4_profile::end(out, size); }
+#endif
+
 
 #include "emu.h"
 #include "emuopts.h"

@@ -498,9 +498,11 @@ inline void unsp_device::trigger_irq(int line)
 
 void unsp_device::check_irqs()
 {
+	ps4_workload::note(PS4_W_IRQ_CHECKS);
 	if (!m_core->m_sirq)
 		return;
 
+	ps4_workload::note(PS4_W_PENDING_IRQ_CHECKS);
 	const int highest_irq = unsp_detail::lowest_pending_irq(m_core->m_sirq);
 
 	if (highest_irq == UNSP_FIQ_LINE)
@@ -512,6 +514,7 @@ void unsp_device::check_irqs()
 
 inline void unsp_device::execute_one(const uint16_t op)
 {
+	ps4_workload::opcode(op);
 	const uint16_t op0 = (op >> 12) & 15;
 	const uint16_t opa = (op >> 9) & 7;
 	const uint16_t op1 = (op >> 6) & 7;
@@ -531,6 +534,8 @@ inline void unsp_device::execute_one(const uint16_t op)
 void unsp_device::execute_run()
 {
 	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_CPU);
+	[[maybe_unused]] auto work_scope = ps4_workload::scope(PS4_WS_CPU);
+	const int before_cycles=m_core->m_icount;
 	if (m_enable_drc)
 	{
 		execute_run_drc();
@@ -568,6 +573,7 @@ void unsp_device::execute_run()
 			check_irqs();
 		}
 	}
+	ps4_workload::note(PS4_W_CPU_CYCLES, uint64_t(before_cycles-m_core->m_icount));
 }
 
 

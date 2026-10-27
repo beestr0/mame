@@ -7,6 +7,7 @@
 **********************************************************************/
 
 #include "emu.h"
+#include "util/ps4_workload.h"
 #include "util/ps4_profile.h"
 #include "spg2xx_video.h"
 
@@ -73,6 +74,8 @@ void spg2xx_video_device::device_reset()
 uint32_t spg2xx_video_device::screen_update(screen_device &screen, bitmap_rgb32 &bitmap, const rectangle &cliprect)
 {
 	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_VIDEO);
+	[[maybe_unused]] auto work_scope = ps4_workload::scope(PS4_WS_VIDEO);
+	ps4_workload::note(PS4_W_SCREEN_UPDATES);
 	address_space &mem = m_cpu->space(AS_PROGRAM);
 
 	if (0)
@@ -108,6 +111,7 @@ uint32_t spg2xx_video_device::screen_update(screen_device &screen, bitmap_rgb32 
 
 	for (uint32_t scanline = (uint32_t)cliprect.min_y; scanline <= (uint32_t)cliprect.max_y; scanline++)
 	{
+		ps4_workload::note(PS4_W_SCANLINES);
 		m_renderer->new_line(cliprect);
 
 		for (int i = 0; i < 4; i++)

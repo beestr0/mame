@@ -4,6 +4,7 @@
 #include "emu.h"
 #include "spg_renderer.h"
 #include "util/spg_rgb555_blend.h"
+#include "util/ps4_workload.h"
 
 DEFINE_DEVICE_TYPE(SPG_RENDERER, spg_renderer_device, "spg_renderer", "SunPlus SPG2xx video rendering")
 
@@ -83,6 +84,8 @@ inline uint8_t spg_renderer_device::mix_channel(uint8_t bottom, uint8_t top, uin
 template<bool Blend, bool FlipX>
 void spg_renderer_device::draw_tilestrip(uint32_t screenwidth, uint32_t drawwidthmask, const rectangle &cliprect, uint32_t tile_h, uint32_t tile_w, uint32_t tilegfxdata_addr, uint32_t tile, uint32_t tile_scanline, int drawx, bool flip_y, uint32_t palette_offset, const uint32_t nc_bpp, const uint32_t bits_per_row, const uint32_t words_per_tile, address_space &spc, uint16_t *paletteram, uint8_t blendlevel)
 {
+	ps4_workload::note(PS4_W_TILE_STRIPS);
+	ps4_workload::note(PS4_W_PIXELS_DECODED,tile_w);
 	const uint32_t yflipmask = flip_y ? tile_h - 1 : 0;
 	uint32_t m = tilegfxdata_addr + words_per_tile * tile + bits_per_row * (tile_scanline ^ yflipmask);
 	uint32_t bits = 0;
@@ -96,7 +99,7 @@ void spg_renderer_device::draw_tilestrip(uint32_t screenwidth, uint32_t drawwidt
 
 		if (nbits < nc_bpp)
 		{
-			uint16_t b = spc.read_word(m++ & 0x3fffff);
+			uint16_t b = ps4_workload::video_word(spc, m++ & 0x3fffff);
 			b = (b << 8) | (b >> 8);
 			bits |= b << (nc_bpp - nbits);
 			nbits += 16;
@@ -116,6 +119,7 @@ void spg_renderer_device::draw_tilestrip(uint32_t screenwidth, uint32_t drawwidt
 				if (Blend && !(m_linebuf[realdrawpos] & 0x8000))
 				{
 
+					ps4_workload::note(PS4_W_BLENDS);
 					m_linebuf[realdrawpos] = spg_detail::blend_rgb555(m_linebuf[realdrawpos], rgb, blendlevel);
 				}
 				else
@@ -145,13 +149,13 @@ void spg_renderer_device::draw_linemap(const rectangle &cliprect, uint32_t scanl
 	int realline = (scanline + yscroll) & 0xff;
 
 
-	uint32_t tile = spc.read_word(tilemap + realline);
+	uint32_t tile = ps4_workload::video_word(spc, tilemap + realline);
 	uint16_t palette = 0;
 
 	//if (!tile)
 	//  continue;
 
-	palette = spc.read_word(palette_map + realline / 2);
+	palette = ps4_workload::video_word(spc, palette_map + realline / 2);
 	if (scanline & 1)
 		palette >>= 8;
 	else
@@ -166,7 +170,7 @@ void spg_renderer_device::draw_linemap(const rectangle &cliprect, uint32_t scanl
 	{
 		for (int i = 0; i < 320; i++)
 		{
-			const uint16_t data = spc.read_word(sourcebase + i);
+			const uint16_t data = ps4_workload::video_word(spc, sourcebase + i);
 
 			if (!(data & 0x8000))
 			{
@@ -191,7 +195,7 @@ void spg_renderer_device::draw_linemap(const rectangle &cliprect, uint32_t scanl
 			bits <<= nc_bpp;
 			if (nbits < nc_bpp)
 			{
-				uint16_t b = spc.read_word(sourcebase++ & 0x3fffff);
+				uint16_t b = ps4_workload::video_word(spc, sourcebase++ & 0x3fffff);
 				b = (b << 8) | (b >> 8);
 				bits |= b << (nc_bpp - nbits);
 				nbits += 16;
@@ -278,6 +282,7 @@ void spg_renderer_device::draw_tilestrip(uint32_t screenwidth, uint32_t drawwidt
 
 void spg_renderer_device::draw_page(const rectangle &cliprect, uint32_t scanline, int priority, uint16_t tilegfxdata_addr, uint16_t *scrollregs, uint16_t *tilemapregs, address_space &spc, uint16_t *paletteram, uint16_t *scrollram, uint32_t which)
 {
+	[[maybe_unused]] auto work_scope = ps4_workload::scope(PS4_WS_PAGE);
 	const uint32_t attr = tilemapregs[0];
 	const uint32_t ctrl = tilemapregs[1];
 
@@ -290,6 +295,8 @@ void spg_renderer_device::draw_page(const rectangle &cliprect, uint32_t scanline
 	{
 		return;
 	}
+
+	ps4_workload::note(PS4_W_ACTIVE_PAGES);
 
 	// graphic data segments/bases
 	uint32_t tilegfxdata_addr_full = tilegfxdata_addr * 0x40;
@@ -365,7 +372,7 @@ void spg_renderer_device::draw_page(const rectangle &cliprect, uint32_t scanline
 		const int realx0 = (x0 + upperscrollbits) & (tile_count_x - 1);
 		uint32_t tile_address = realx0 + (tile_count_x * y0);
 
-		tile = (ctrl & 0x0004) ? spc.read_word(tilemap_rambase) : spc.read_word(tilemap_rambase + tile_address);
+		tile = (ctrl & 0x0004) ? ps4_workload::video_word(spc, tilemap_rambase) : ps4_workload::video_word(spc, tilemap_rambase + tile_address);
 
 		if (!tile)
 			continue;
@@ -376,7 +383,7 @@ void spg_renderer_device::draw_page(const rectangle &cliprect, uint32_t scanline
 		if ((tilectrl & 2) == 0)
 		{
 			// -(1) bld(1) flip(2) pal(4)
-			uint16_t exattribute = (tilectrl & 0x0004) ? spc.read_word(exattributemap_rambase) : spc.read_word(exattributemap_rambase + tile_address / 2);
+			uint16_t exattribute = (tilectrl & 0x0004) ? ps4_workload::video_word(spc, exattributemap_rambase) : ps4_workload::video_word(spc, exattributemap_rambase + tile_address / 2);
 			if (realx0 & 1)
 				exattribute >>= 8;
 			else
@@ -409,6 +416,7 @@ void spg_renderer_device::draw_page(const rectangle &cliprect, uint32_t scanline
 
 void spg_renderer_device::draw_sprite(const rectangle &cliprect, uint32_t scanline, int priority, uint32_t spritegfxdata_addr, uint32_t base_addr, address_space &spc, uint16_t *paletteram, uint16_t *spriteram)
 {
+	[[maybe_unused]] auto work_scope = ps4_workload::scope(PS4_WS_SPRITE);
 	uint32_t tilegfxdata_addr = spritegfxdata_addr;
 	uint32_t tile = spriteram[base_addr + 0];
 	int16_t x = spriteram[base_addr + 1];
@@ -473,6 +481,7 @@ void spg_renderer_device::draw_sprite(const rectangle &cliprect, uint32_t scanli
 
 		if ((scanx >= 0) && (scanline <= lastline))
 		{
+			ps4_workload::note(PS4_W_ELIGIBLE_SPRITES);
 			draw_tilestrip(screenwidth, xmask, blend, flip_x, cliprect, tile_h, tile_w, tilegfxdata_addr, tile, scanx, x, flip_y, palette_offset, nc_bpp, bits_per_row, words_per_tile, spc, paletteram, blendlevel);
 		}
 	}
@@ -485,6 +494,7 @@ void spg_renderer_device::draw_sprite(const rectangle &cliprect, uint32_t scanli
 
 		if ((scanx >= 0) && (scanline <= templastline))
 		{
+			ps4_workload::note(PS4_W_ELIGIBLE_SPRITES);
 			draw_tilestrip(screenwidth, xmask, blend, flip_x, cliprect, tile_h, tile_w, tilegfxdata_addr, tile, scanx, x, flip_y, palette_offset, nc_bpp, bits_per_row, words_per_tile, spc, paletteram, blendlevel);
 		}
 		// clipped against the bottom
@@ -494,6 +504,7 @@ void spg_renderer_device::draw_sprite(const rectangle &cliprect, uint32_t scanli
 
 		if ((scanx >= 0) && (scanline <= templastline))
 		{
+			ps4_workload::note(PS4_W_ELIGIBLE_SPRITES);
 			draw_tilestrip(screenwidth, xmask, blend, flip_x, cliprect, tile_h, tile_w, tilegfxdata_addr, tile, scanx, x, flip_y, palette_offset, nc_bpp, bits_per_row, words_per_tile, spc, paletteram, blendlevel);
 		}
 	}

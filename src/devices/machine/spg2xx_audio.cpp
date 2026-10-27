@@ -18,6 +18,7 @@
 **********************************************************************/
 
 #include "emu.h"
+#include "util/ps4_workload.h"
 #include "util/ps4_profile.h"
 #include "spg2xx_audio.h"
 
@@ -875,6 +876,7 @@ void spg2xx_audio_device::audio_w(offs_t offset, uint16_t data)
 void spg2xx_audio_device::sound_stream_update(sound_stream &stream)
 {
 	auto ps4_scope = ps4_profile::scope(PS4_PROFILE_SOUND);
+	[[maybe_unused]] auto work_scope = ps4_workload::scope(PS4_WS_SOUND);
 	for (int i = 0; i < stream.samples(); i++)
 	{
 		int32_t left_total = 0;

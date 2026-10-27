@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "emu.h"
 #include "spg_renderer.h"
+#if defined(PS4_WORKLOAD_TEST)
+#include "util/ps4_workload.h"
+[[maybe_unused]] static uint64_t clock_tick(){static uint64_t tick=0;return ++tick;}
+#endif
+#include <cassert>
 #include <chrono>
 #include <cstdio>
 struct renderer : spg_renderer_device {
@@ -9,6 +14,9 @@ struct renderer : spg_renderer_device {
 };
 static uint32_t random_word(uint32_t &state) {state=state*1664525+1013904223;return state;}
 int main() {
+#if defined(PS4_WORKLOAD_TEST) && PS4_WORKLOAD_HOOKS
+    assert(ps4_workload::begin(clock_tick,0)==0);
+#endif
     machine_config config;renderer device(config);address_space bus;
     uint64_t pixels_hash=1469598103934665603ULL,register_hash=0;
     const auto begin=std::chrono::steady_clock::now();
@@ -41,6 +49,12 @@ int main() {
         for(auto p:bitmap.pixels)pixels_hash=(pixels_hash^p)*1099511628211ULL;
         register_hash=register_hash*65599+device.get_video_reg_42()+device.get_video_reg_2a()+device.get_video_reg_30()+device.get_video_reg_3c();
     }
+#if defined(PS4_WORKLOAD_TEST) && PS4_WORKLOAD_HOOKS
+    ps4_workload_result result{};assert(ps4_workload::end(&result,sizeof(result))==0);
+    // The reference fixture has no production hooks. Active hooks must still
+    // leave pixels/bus ordering identical; optimized source must record work.
+    if(result.calls[PS4_WS_PAGE])assert(result.counts[PS4_W_VIDEO_READS]>0 && result.clock_reads<=24);
+#endif
     const auto ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-begin).count();
     printf("scenes=192 pixels=%016llx bus_trace=%016llx reads=%llu registers=%016llx\n",
         (unsigned long long)pixels_hash,(unsigned long long)bus.trace,(unsigned long long)bus.reads,(unsigned long long)register_hash);

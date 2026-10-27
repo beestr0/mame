@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "util/ps4_workload.h"
+
 #include "unspdefs.h"
 
 #include "cpu/drcuml.h"
@@ -202,13 +204,14 @@ protected:
 	// clears an interrupt line, we provide this direct accessor.
 	void set_state_unsynced(int inputnum, int state);
 
-	uint16_t read16(uint32_t address) { return m_program.read_word(address); }
+	uint16_t read16(uint32_t address) { ps4_workload::note(PS4_W_CPU_READS); return m_program.read_word(address); }
 
 	void write16(uint32_t address, uint16_t data)
 	{
 	#if UNSP_LOG_REGS
 		log_write(address, data);
 	#endif
+		ps4_workload::note(PS4_W_CPU_WRITES);
 		m_program.write_word(address, data);
 	}
 

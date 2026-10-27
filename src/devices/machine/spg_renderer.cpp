@@ -3,6 +3,7 @@
 
 #include "emu.h"
 #include "spg_renderer.h"
+#include "util/spg_rgb555_blend.h"
 
 DEFINE_DEVICE_TYPE(SPG_RENDERER, spg_renderer_device, "spg_renderer", "SunPlus SPG2xx video rendering")
 
@@ -115,9 +116,7 @@ void spg_renderer_device::draw_tilestrip(uint32_t screenwidth, uint32_t drawwidt
 				if (Blend && !(m_linebuf[realdrawpos] & 0x8000))
 				{
 
-					m_linebuf[realdrawpos] = (mix_channel((uint8_t)(m_linebuf[realdrawpos] >> 10) & 0x1f,  (rgb >> 10) & 0x1f, blendlevel) << 10) |
-											 (mix_channel((uint8_t)(m_linebuf[realdrawpos] >> 5)  & 0x1f,  (rgb >> 5)  & 0x1f, blendlevel) << 5) |
-											 (mix_channel((uint8_t)(m_linebuf[realdrawpos] >> 0)  & 0x1f,  (rgb >> 0)  & 0x1f, blendlevel) << 0);
+					m_linebuf[realdrawpos] = spg_detail::blend_rgb555(m_linebuf[realdrawpos], rgb, blendlevel);
 				}
 				else
 				{

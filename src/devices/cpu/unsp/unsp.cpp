@@ -18,6 +18,7 @@
 
 #include "emu.h"
 #include "util/ps4_profile.h"
+#include "util/unsp_irq_select.h"
 #include "unsp.h"
 
 #include "unspdasm.h"
@@ -500,15 +501,7 @@ void unsp_device::check_irqs()
 	if (!m_core->m_sirq)
 		return;
 
-	int highest_irq = -1;
-	for (int i = 0; i <= 8; i++)
-	{
-		if (BIT(m_core->m_sirq, i))
-		{
-			highest_irq = i;
-			break;
-		}
-	}
+	const int highest_irq = unsp_detail::lowest_pending_irq(m_core->m_sirq);
 
 	if (highest_irq == UNSP_FIQ_LINE)
 		trigger_fiq();

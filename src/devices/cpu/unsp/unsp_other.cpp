@@ -3,6 +3,7 @@
 
 #include "emu.h"
 #include "unsp.h"
+#include "util/ps4_throughput_config.h"
 #include "unspfe.h"
 
 #include "unspdasm.h"
@@ -276,7 +277,9 @@ void unsp_device::execute_remaining(const uint16_t op)
 }
 
 
-bool unsp_device::do_basic_alu_ops(const uint16_t &op0, uint32_t &lres, uint16_t &r0, uint16_t &r1, uint32_t &r2, bool update_flags)
+// Permit LLVM to eliminate the per-instruction reference-argument spills.
+// Keep the body and exported method unchanged for other callers/ISA variants.
+PS4_UNSP_ALU_ATTR bool unsp_device::do_basic_alu_ops(const uint16_t &op0, uint32_t &lres, uint16_t &r0, uint16_t &r1, uint32_t &r2, bool update_flags)
 {
 	switch (op0)
 	{

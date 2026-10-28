@@ -7,12 +7,14 @@ import subprocess
 import tempfile
 import re
 import statistics
+from cache_fixture import generate
 ROOT=Path(__file__).resolve().parents[2]
 def run():
     cxx='clang++'
     flags=[cxx,'-std=c++20','-O2','-Wall','-Wextra','-Isrc/lib']
     with tempfile.TemporaryDirectory(prefix='spg-core-differential-') as folder:
         temp=Path(folder)
+        generate(ROOT,temp)
         # Generated feature headers are stable; switching one flag only rewrites its header.
         import sys,time
         sys.path.insert(0,str(ROOT/'scripts/build'))
@@ -45,7 +47,7 @@ def run():
         for kind,source in [('reference',reference),('optimized',ROOT/'src/devices/machine/spg_renderer.cpp')]:
             # Place both actual .cpp files next to the same unmodified public header.
             selected=temp/(kind+'.cpp');shutil.copyfile(source,selected)
-            shutil.copyfile(ROOT/'src/devices/machine/spg_renderer.h',temp/'spg_renderer.h')
+            shutil.copyfile(ROOT/('tests/ps4/reference/spg_renderer_v113.h'if kind=='reference'else'src/devices/machine/spg_renderer.h'),temp/'spg_renderer.h')
             exe=temp/kind
             command=flags+['-Wno-unused-parameter','-Wno-sign-compare','-Itests/ps4/fake_renderer','-I'+str(temp),str(selected),'tests/ps4/renderer_contract.cpp','-o',str(exe)]
             subprocess.run(command,cwd=ROOT,check=True)

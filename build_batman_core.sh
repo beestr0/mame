@@ -10,7 +10,7 @@ cd "$(dirname "$0")"
 : "${TARGET_NM:=llvm-nm}"
 : "${BUILD_DIR:=build/ps4}"
 [[ -f "$OO_PS4_TOOLCHAIN/link.x" ]] || { echo "Invalid OpenOrbis SDK" >&2; exit 1; }
-: "${PS4_CORE_VARIANT:=both}"
+: "${PS4_CORE_VARIANT:=alu-inline}"
 case "$BUILD_DIR" in /*) variant_headers="$BUILD_DIR/generated/ps4";; *) variant_headers="$(pwd)/$BUILD_DIR/generated/ps4";; esac
 python3 scripts/build/ps4_variant.py "$variant_headers" "$PS4_CORE_VARIANT"
 flags="--target=x86_64-pc-freebsd12-elf -D_GNU_SOURCE -isysroot $OO_PS4_TOOLCHAIN -isystem $OO_PS4_TOOLCHAIN/include/c++/v1 -isystem $OO_PS4_TOOLCHAIN/include -fPIC -I$variant_headers"

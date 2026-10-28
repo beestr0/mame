@@ -8,12 +8,13 @@
 #include "osdepend.h"
 #include "util/ps4_profile.h"
 #include "util/ps4_workload.h"
+#include "util/ps4_throughput_config.h"
 #include "util/unsp_irq_select.h"
 #include "util/spg_rgb555_blend.h"
 #if defined(MAME_OPENORBIS)
 #define PS4_TEXT_INNER(x) #x
 #define PS4_TEXT(x) PS4_TEXT_INNER(x)
-extern "C" const char *retro_ps4_build_identity() {return "PS4CORE:irq=" PS4_TEXT(PS4_OPT_IRQ) ";blend=" PS4_TEXT(PS4_OPT_BLEND) ";workload=" PS4_TEXT(PS4_WORKLOAD_HOOKS);}
+extern "C" const char *retro_ps4_build_identity() {return "PS4CORE:irq=" PS4_TEXT(PS4_OPT_IRQ) ";blend=" PS4_TEXT(PS4_OPT_BLEND) ";workload=" PS4_TEXT(PS4_WORKLOAD_HOOKS) ";aluinline=" PS4_TEXT(PS4_UNSP_ALU_INLINE);}
 extern "C" unsigned retro_ps4_workload_available() {return ps4_workload::compiled?1:0;}
 extern "C" int retro_ps4_workload_begin(uint64_t (*clock)(),uint32_t seed) {return ps4_workload::begin(clock,seed);}
 extern "C" int retro_ps4_workload_end(ps4_workload_result *out,uint32_t bytes) {return ps4_workload::end(out,bytes);}

@@ -7,19 +7,24 @@
 #endif
 #include <cassert>
 #include <chrono>
+#include <ctime>
 #include <cstdio>
+#include <string>
 struct renderer : spg_renderer_device {
     renderer(const machine_config &config):spg_renderer_device(config,"synthetic",nullptr) {device_start();device_reset();}
     void reset() {device_reset();}
 };
 static uint32_t random_word(uint32_t &state) {state=state*1664525+1013904223;return state;}
-int main() {
+int main(int argc,char **argv) {
+    const bool mutation=argc>1 && std::string(argv[1])=="mutation";
+    const bool unsupported=argc>1 && std::string(argv[1])=="unsupported";
 #if defined(PS4_WORKLOAD_TEST) && PS4_WORKLOAD_HOOKS
     assert(ps4_workload::begin(clock_tick,0)==0);
 #endif
     machine_config config;renderer device(config);address_space bus;
+    if(unsupported){bus.width=22;bus.endian=ENDIANNESS_LITTLE;}
     uint64_t pixels_hash=1469598103934665603ULL,register_hash=0;
-    const auto begin=std::chrono::steady_clock::now();
+    const auto begin=std::chrono::steady_clock::now();const auto cpu_begin=std::clock();
     for(unsigned scene=0;scene<192;++scene) {
         device.reset();bitmap_rgb32 bitmap;bus.seed=scene+1;
         uint32_t state=scene+35;uint16_t sprites[1024],palette[256],scroll[256];
@@ -37,6 +42,13 @@ int main() {
         uint16_t page[]={uint16_t(random_word(state)),uint16_t(8|(scene&2)|((scene&1)<<4)),uint16_t(random_word(state)),uint16_t(random_word(state))};
         rectangle full;rectangle clip;clip.min_x=int(scene%17);clip.max_x=319-int(scene%19);
         const int limit=scene%4==0?0:scene%4==1?1:scene%4==2?64:256;
+        bus.event=[&](uint32_t address,address_space &memory){
+            if(!mutation)return;
+            if(memory.reads%97==0)palette[(address>>2)&255]^=0xffff;
+            if(memory.reads%337==0)sprites[(address>>1)&1023]^=0x101;
+            if(memory.reads%419==0)memory.remap();
+            if(memory.reads%53==0)++memory.seed;
+        };
         for(unsigned y=0;y<240;++y) {
             device.new_line(full);
             for(int priority=0;priority<4;++priority) {
@@ -55,8 +67,9 @@ int main() {
     // leave pixels/bus ordering identical; optimized source must record work.
     if(result.calls[PS4_WS_PAGE])assert(result.counts[PS4_W_VIDEO_READS]>0 && result.clock_reads<=24);
 #endif
+    fprintf(stderr,"mapped_handler_lookups=%llu reads=%llu io_reads=%llu\n",(unsigned long long)bus.lookups,(unsigned long long)bus.reads,(unsigned long long)bus.io_reads);
     const auto ms=std::chrono::duration<double,std::milli>(std::chrono::steady_clock::now()-begin).count();
     printf("scenes=192 pixels=%016llx bus_trace=%016llx reads=%llu registers=%016llx\n",
         (unsigned long long)pixels_hash,(unsigned long long)bus.trace,(unsigned long long)bus.reads,(unsigned long long)register_hash);
-    fprintf(stderr,"HOST SYNTHETIC DEVICE ONLY elapsed_ms=%.3f; not MAME gameplay or PS4 performance\n",ms);
+    fprintf(stderr,"HOST SYNTHETIC DEVICE ONLY elapsed_ms=%.3f cpu_ms=%.3f; not MAME gameplay or PS4 performance\n",ms,1000.0*(std::clock()-cpu_begin)/CLOCKS_PER_SEC);
 }
